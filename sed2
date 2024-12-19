@@ -1,0 +1,12 @@
+stacked_features_test = v.stack(location=("latitude", "longitude"))
+flattened_features_test = stacked_features_test.to_array(dim="variables").stack(features=("variables", "feature_dim")).transpose("day", "location", "features")
+# Reshape into (rows, features) where rows = day × location
+X_test = flattened_features_test.values.reshape(flattened_features_test.shape[0] * flattened_features_test.shape[1], -1)
+
+# Check the resulting shape
+print("Shape of flattened features (X_test):", X_test.shape)
+
+flattened_labels_test = test_labels.stack(location=("latitude", "longitude"))
+aligned_labels_test = flattened_labels_test.sel(day=stacked_features["day"])
+y_test = aligned_labels_test.values.flatten()  # Flatten into a single column
+print("Shape of flattened labels (y):", y.shape)
