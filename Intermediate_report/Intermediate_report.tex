@@ -117,6 +117,21 @@ class HotDayPredictor(nn.Module):
 # Training loop ...
 \end{lstlisting}
 
+\subsection{Comparison of Configurations}
+The models were evaluated using two different configurations: the original setup with a 30-day input window and 3 hot days in 7 days, and a revised setup with a 60-day input window and 2 hot days in 5 days. For the Random Forest model, the performance metrics were:
+
+\begin{itemize}
+    \item \textbf{Original Configuration:} Accuracy: 0.2391, Precision: 0.0429, Recall: 0.7940, F1 Score: 0.0813.
+    \item \textbf{Revised Configuration:}
+    \begin{itemize}
+        \item Threshold 0.3: Accuracy: 0.0637, Precision: 0.0637, Recall: 1.0000, F1 Score: 0.1197.
+        \item Threshold 0.5: Accuracy: 0.1346, Precision: 0.0655, Recall: 0.9492, F1 Score: 0.1226.
+    \end{itemize}
+\end{itemize}
+
+The revised configuration showed marginal improvement in F1 Score due to its higher recall. However, it introduced many false positives, as evidenced by the low accuracy. The 60-day input window likely provided additional historical context, improving sensitivity to potential heatwaves, but further tuning is needed to balance precision and recall.
+
+
 \section{Conclusions and Future Work}
 This intermediate report illustrates the complexity of defining and predicting heatwaves using ERA5 climate data. The steps described include:
 \begin{itemize}
@@ -124,6 +139,7 @@ This intermediate report illustrates the complexity of defining and predicting h
     \item Defining hot days based on the 95th percentile of July/August temperatures.
     \item Constructing a machine learning dataset with rolling windows and binary labels indicating imminent heatwaves.
     \item Addressing the severe class imbalance by lowering the threshold temporarily.
+    \item Testing with other windows sizes (60-day input and 2 hot days in 5 days) which demonstrated higher recall but at the cost of significantly lower accuracy.
 \end{itemize}
 
 Preliminary modeling attempts, including neural networks and random forests, have shown the challenges inherent to the problem, particularly due to label imbalance. Future work will focus on:
