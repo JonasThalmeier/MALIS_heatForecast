@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[8pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
@@ -13,7 +13,7 @@
 
 \geometry{margin=1in}
 
-\title{Intermediate Project Report on ERA5-based Heatwave Prediction}
+\title{Global Weather Pattern Prediction for Disaster Preparedness}
 \author{Jonas Thalmeier, Ana Martinez}
 \date{\today}
 
@@ -21,9 +21,6 @@
 
 \maketitle
 
-\begin{abstract}
-This report describes the intermediate steps, data selection, preprocessing, and initial modeling attempts for a machine learning project aimed at predicting heatwaves in Spain based on ERA5 climate data. The chosen approach involved restricting spatial coverage to the Iberian Peninsula (Spain) and focusing on daily temperature observations at 00:00 and 12:00 UTC. Multiple atmospheric and surface variables were considered. The data were processed to identify hot days according to a percentile-based threshold and then aggregated into a rolling window structure suitable for supervised learning. Preliminary machine learning and deep learning models were tested, and a reduction in the percentile threshold was introduced to achieve a more balanced dataset before future adjustments to stricter criteria.
-\end{abstract}
 
 \section{Introduction}
 Effective identification and prediction of heatwaves are critical for public health, agriculture, and energy management. To accomplish this, a dataset containing atmospheric measurements was downloaded from the Copernicus Climate Data Store (CDS)\footnote{\url{https://cds.climate.copernicus.eu/}}. The dataset in use is ERA5, which provides hourly atmospheric reanalysis data with a high temporal and spatial resolution. As part of this project, steps were taken to extract spatially and temporally restricted subsets of ERA5 data and to apply percentile-based definitions of heatwaves.
@@ -71,18 +68,7 @@ All models were trained using the preprocessed ERA5 features and the binary labe
 
 The code snippet below outlines an example of loading the data, performing initial transformations, and training a neural network model. For brevity, only select steps are shown:
 
-\begin{lstlisting}[language=Python, basicstyle=\ttfamily\small]
-import xarray as xr
-import pygrib
-import numpy as np
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
-
-# Example: Loading ERA5 data and selecting Spain region, 
-# restricting to 00:00 and 12:00 UTC times, merging them,
-# and computing hot day labels.
-
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\scriptsize]
 data = xr.open_dataset('./era5_spain.grib', engine="cfgrib")
 data_summer = data.sel(time=data["time"].dt.month.isin([5,6,7,8]))
 # Filter times to 0:00 and 12:00, merge them into a single daily record, etc.
@@ -132,6 +118,7 @@ The models were evaluated using two different configurations: the original setup
 The revised configuration showed marginal improvement in F1 Score due to its higher recall. However, it introduced many false positives, as evidenced by the low accuracy. The 60-day input window likely provided additional historical context, improving sensitivity to potential heatwaves, but further tuning is needed to balance precision and recall.
 
 
+
 \section{Conclusions and Future Work}
 This intermediate report illustrates the complexity of defining and predicting heatwaves using ERA5 climate data. The steps described include:
 \begin{itemize}
@@ -139,7 +126,6 @@ This intermediate report illustrates the complexity of defining and predicting h
     \item Defining hot days based on the 95th percentile of July/August temperatures.
     \item Constructing a machine learning dataset with rolling windows and binary labels indicating imminent heatwaves.
     \item Addressing the severe class imbalance by lowering the threshold temporarily.
-    \item Testing with other windows sizes (60-day input and 2 hot days in 5 days) which demonstrated higher recall but at the cost of significantly lower accuracy.
 \end{itemize}
 
 Preliminary modeling attempts, including neural networks and random forests, have shown the challenges inherent to the problem, particularly due to label imbalance. Future work will focus on:
@@ -152,5 +138,14 @@ Preliminary modeling attempts, including neural networks and random forests, hav
 \end{itemize}
 
 This initial exploration lays the groundwork for more targeted modeling and hyperparameter tuning. Further improvements and refinements are expected to improve predictive performance and produce a robust and reliable heatwave forecasting model.
+
+\section{Allocation of tasks}
+\begin{itemize}
+\item Setting up git: Jonas
+\item Generating Dataset: Jonas
+\item Data Preprocessing: Jonas
+\item Machine Learning, optimizing Neural Network: Both
+\item Writing Report: Both
+\end{itemize}
 
 \end{document}
