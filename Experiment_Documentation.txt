@@ -57,3 +57,22 @@ Validation Loss: 22.825080
 With only land areas selected, the overfitting is even worse:
 Training Loss: 0.161386
 Validation Loss: 31.200668
+
+Evaluation Metrics:
+Accuracy: 0.8951
+Precision: 0.1166
+Recall: 0.0436
+F1 Score: 0.0635
+
+
+-- Iteration 4
+Replace NN with random forest. Without balanced class weights, Acurracy=91% but Precision=Recall=0%
+With balanced weights:
+Random Forest Performance:
+Accuracy: 0.9119
+Precision: 0.2318
+Recall: 0.0347
+F1 Score: 0.0604
+
+With class_weight={0: 1, 1: 68}:
+
