@@ -1,4 +1,4 @@
-Baseline:
+-- Baseline:
        def __init__(self, input_size):
         super(HotDayPredictor, self).__init__()
         self.fc = nn.Sequential(
@@ -17,4 +17,26 @@ Validation Loss: 1.825566
 Training Loss Decreasing, Validation Loss Stagnating/Increasing -> Overfitting
 
 
-Iteration 1:
+
+-- Iteration 1:
+Added Dropouts:
+self.fc = nn.Sequential(
+    nn.Linear(input_size, 128),
+    nn.ReLU(),
+    nn.Dropout(0.3),  # Add dropout with a rate of 30%
+    nn.Linear(128, 64),
+    nn.ReLU(),
+    nn.Dropout(0.3),  # Add dropout
+    nn.Linear(64, 1)
+)
+
+Added weighted loss function:
+global_pos_weight = (global_total_count - global_positive_count) / global_positive_count
+loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(global_pos_weight, dtype=torch.float32))
+
+Lowered learning rate by factor 10 to 0.0001
+
+Training Loss: 0.311259
+Validation Loss: 20.156125
+
+Stagneting training and val loss
