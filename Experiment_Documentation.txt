@@ -40,3 +40,9 @@ Training Loss: 0.311259
 Validation Loss: 20.156125
 
 Stagneting training and val loss
+
+-- Iteration 2
+Added longitudes, latiduted and 95th percentile temp to records
+Still super high decrepancy between train and val loss. Val loss rises --> still overfitting
+Training Loss: 0.299057
+Validation Loss: 24.856614
