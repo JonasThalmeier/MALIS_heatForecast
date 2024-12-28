@@ -42,7 +42,18 @@ Validation Loss: 20.156125
 Stagneting training and val loss
 
 -- Iteration 2
-Added longitudes, latiduted and 95th percentile temp to records
+Added longitudes, latiduted and 95th percentile temp to records.
 Still super high decrepancy between train and val loss. Val loss rises --> still overfitting
 Training Loss: 0.299057
 Validation Loss: 24.856614
+
+-- Iteration 3
+Generated an additional dataset with more variables and only the summer month.
+
+No improvement. Still strong Overfitting
+Training Loss: 0.282310
+Validation Loss: 22.825080
+
+With only land areas selected, the overfitting is even worse:
+Training Loss: 0.161386
+Validation Loss: 31.200668
