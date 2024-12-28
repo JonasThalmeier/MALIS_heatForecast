@@ -1,0 +1,20 @@
+Baseline:
+       def __init__(self, input_size):
+        super(HotDayPredictor, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+            nn.Sigmoid()
+        )
+
+Normaliaztion with global (trainig) mean and std.
+
+Training Loss: 0.023145
+Validation Loss: 1.825566
+Training Loss Decreasing, Validation Loss Stagnating/Increasing -> Overfitting
+
+
+Iteration 1:
