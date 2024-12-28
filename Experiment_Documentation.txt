@@ -75,4 +75,15 @@ Recall: 0.0347
 F1 Score: 0.0604
 
 With class_weight={0: 1, 1: 68}:
+Random Forest Performance:
+Accuracy: 0.9106
+Precision: 0.1973
+Recall: 0.0315
+F1 Score: 0.0544
 
+-- Iteration V
+XGBClassifier. Still low F1 Score
+Accuracy: 0.9185
+Precision: 0.5106
+Recall: 0.0010
+F1 Score: 0.0021
