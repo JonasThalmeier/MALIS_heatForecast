@@ -99,3 +99,23 @@ Accuracy: 0.8164
 Precision: 0.1632
 Recall: 0.3033
 F1 Score: 0.2122
+
+-- Iteration VI
+torch LogisticRegressionModel. Less Overfitting, but still poor F1
+Logistic Regression Performance (PyTorch):
+Accuracy: 0.9037
+Precision: 0.1459
+Recall: 0.0077
+F1 Score: 0.0146
+
+-- Iteration VII
+Same model as before but with weights
+added: criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([positive_weight], dtype=torch.float32))
+Results are better but still worse than with sklearn
+Accuracy: 0.7819
+Precision: 0.1026
+Recall: 0.1741
+F1 Score: 0.1291
+
+
+
