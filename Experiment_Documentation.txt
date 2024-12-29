@@ -82,8 +82,20 @@ Recall: 0.0315
 F1 Score: 0.0544
 
 -- Iteration V
-XGBClassifier. Still low F1 Score
+XGBClassifier with scale_pos_wheight=len(y_train_rf[y_train_rf == 0]) / len(y_train_rf[y_train_rf == 1]) . Still low F1 Score
 Accuracy: 0.9185
 Precision: 0.5106
 Recall: 0.0010
 F1 Score: 0.0021
+
+Wehn the percentile is changed to 85%:
+Accuracy: 0.7754
+Precision: 0.6416
+Recall: 0.0840
+F1 Score: 0.1486
+
+With logistic regression better results (95 percentile). (lbfgs solver, 500 iterations)
+Accuracy: 0.8164
+Precision: 0.1632
+Recall: 0.3033
+F1 Score: 0.2122
