@@ -11,6 +11,8 @@
 \usepackage{enumerate}
 \usepackage{listings}
 \usepackage{geometry}
+\usepackage{float}
+
 
 \usepackage{listings}
 \usepackage{xcolor}
@@ -76,6 +78,7 @@ The dataset encompassed locations from 36\degree south to 44\degree north and 10
 After downloading the data in GRIB format, standard Python libraries such as \texttt{xarray} and \texttt{pygrib} were used for reading and handling the dataset. The data were initially organized by time and location. To simplify the learning task, measurements recorded at 00:00 and 12:00 for the same day and location were combined, presenting them as features side-by-side within a single row. This reformatting streamlined the input for the machine learning model, ensuring that each daily record included both early morning and midday conditions.
 
 \section{Definition of Hot Days and Heatwaves}
+\label{heatDef}
 The Spanish meteorological service defines a heatwave as a sequence of at least three consecutive days during which the maximum daily temperature at a given location exceeds the 95th percentile of the daily maximum temperature distribution for July and August at that location. To implement this criterion, the temperatures at 12:00 for July and August were extracted from the ERA5 dataset. The 95th percentile threshold was then computed for each grid point (latitude-longitude pair).
 
 Subsequently, any day whose 12:00 temperature exceeded the computed local 95th percentile threshold was labeled as a ``hot day.'' Rolling computations were carried out to identify sequences of three or more consecutive hot days (i.e., potential heatwave events). These computations confirmed the occurrence of multi-day hot periods in certain locations and provided an initial assessment of the frequency and distribution of heatwave events.
@@ -276,6 +279,65 @@ Normalization was performed using the global mean and standard deviation. The Sc
 \end{itemize}
 Although the Scikit-Learn implementation performed better than the PyTorch model in terms of F1 score, both approaches struggled with the highly imbalanced data, reaffirming the challenges of this task.
 
+\section{Exploring Lower Percentiles}
+Given that all previous attempts to achieve satisfactory performance had failed, the next step was to investigate whether altering the problem definition could yield better results. Specifically, the effect of lowering the percentile threshold used to define "hot" days, as outlined in Section \ref{heatDef}, was examined. For this purpose, the logistic regression model with the "saga" solver, which had previously demonstrated relatively good results, was utilized. Percentile thresholds of 0.5, 0.6, 0.7, 0.8, 0.9, and 0.95 were tested.\\
+The results of this investigation are summarized in Table \ref{tab:perc} and visualized in Figure \ref{fig:perc}. It is evident that lowering the percentile threshold simplifies the task, resulting in significantly better performance, as measured by the F1 score. Notably, the F1 score decreases sharply as the percentile threshold approaches 0.95. This indicates that predicting events defined by higher percentiles is substantially more challenging.\\
+However, it is important to emphasize that the original objective was to predict heatwaves as defined by the Spanish meteorological service, which corresponds to the 95th percentile. While predictions based on lower percentiles do not directly align with this goal, they can serve as a valuable intermediary step. Models performing well on lower percentiles can inform the selection of suitable architectures, hyperparameter tuning, and data augmentation strategies (e.g., SMOTE). These insights can then be leveraged to optimize models for the more challenging task of predicting heatwaves at the 95th percentile threshold.
+
+\begin{table}[H]
+    \centering
+    \caption{Model performance metrics for various percentiles.}
+    \label{tab:perc}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Percentile} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+        \midrule
+        50th & 0.7645 & 0.8075 & 0.7965 & 0.8020 \\
+        60th & 0.7530 & 0.7804 & 0.7010 & 0.7386 \\
+        70th & 0.7452 & 0.7531 & 0.5323 & 0.6238 \\
+        80th & 0.7494 & 0.6656 & 0.2781 & 0.3923 \\
+        90th & 0.8302 & 0.4024 & 0.0595 & 0.1037 \\
+        95th & 0.9164 & 0.1898 & 0.0076 & 0.0147 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./performance_vs_percentile.png}
+    \caption{Model performance across different percentiles.}
+    \label{fig:perc}
+\end{figure}
+
+\section{Different Prediction Timeframes}
+To simplify the task for the machine learning model, alternative prediction timeframes were evaluated. Initially, the goal was to predict whether at least 3 of the next 7 days would be "hot." The task was modified to predict whether the next day would be "hot" and then whether at least 2 of the next 3 days would be "hot," using both the 70th and 95th percentiles. \\
+The results, shown in Table \ref{tab:timeframe}, highlight that predicting whether the next day is "hot" is significantly easier than the original task for both percentiles. The performance metrics for this simplified task far exceed those of the initial 7-day prediction. Expanding the timeframe to predict whether at least 2 of the next 3 days will be "hot" proves more challenging. For the 95th percentile, the F1 score indicates poor overall performance, though it remains better than the original 7-day prediction task. For the 70th percentile, performance is still acceptable, clearly outperforming the initial task but falling short of the simpler next-day prediction.
+\begin{table}[H]
+    \centering
+    \caption{Performance metrics for different prediction timeframes and percentiles}
+    \label{tab:timeframe}
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \textbf{Percentile} & \textbf{Task} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+        \hline
+        70th & 1 heat day in 1 day streak & 0.9469 & 0.9488 & 0.8836 & 0.9151 \\
+        70th & 2 heat days in 3 day streak & 0.8530 & 0.8131 & 0.6807 & 0.7411 \\
+        70th & 3 heat days in 7 day streak & 0.7452 & 0.7531 & 0.5323 & 0.6238 \\
+        \hline
+        95th & 1 heat day in 1 day streak & 0.9431 & 0.9317 & 0.3436 & 0.5020 \\
+        95th & 2 heat days in 3 day streak & 0.9346 & 0.6541 & 0.0648 & 0.1179 \\
+        95th & 3 heat days in 7 day streak & 0.9164 & 0.1898 & 0.0076 & 0.0147 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\section{Possible Future Work}
+After an in-depth examination, it can be concluded that achieving high performance for the initial task within the current framework is highly unlikely. As demonstrated in the previous sections, simplifying the problem either in the temporal domain or by relaxing the criteria for defining "hot" days leads to significant performance improvements, with results that are highly satisfactory. However, if the objective remains to tackle the original, more complex problem, the current framework must undergo fundamental changes.\\
+A promising direction would be to incorporate weather data from adjacent locations in addition to the target location. This approach aligns with standard practices in weather forecasting, as weather patterns are highly dependent on regional interactions. However, implementing this strategy would require more complex data preprocessing and significantly higher computational resources. Even with the current preprocessing framework, a laptop with 16GB of memory struggles to handle the workload, making it necessary to migrate the project to a cloud-based service such as Google Colab. While attempts to use such platforms were made earlier, unresolved errors and compatibility issues hindered progress.\\
+Another critical step would be to conduct a thorough review of relevant literature and research on similar projects. Adopting methods and techniques that have already demonstrated success in related studies could provide valuable insights and potentially steer the project in a more promising direction. Ideally, this review should have been conducted earlier in the project, as it might have prevented efforts from being directed toward less fruitful approaches.\\
+By addressing these considerations, the project could be significantly improved, whether by simplifying the problem further or by fundamentally redesigning the framework to tackle the original task more effectively.
+
 
 \section{Allocation of tasks}
 \begin{itemize}
@@ -283,7 +345,21 @@ Although the Scikit-Learn implementation performed better than the PyTorch model
 \item Generating Dataset: Jonas
 \item Data Preprocessing: Jonas
 \item Machine Learning, optimizing Neural Network: Both
+\item SMOTE: Both
+\item Anomaly detection: Ana
+\item Investigating effect of using different percentile: Jonas
 \item Writing Report: Both
+\end{itemize}
+For more information the commit history can be consulted (\href{https://github.com/JonasThalmeier/MALIS_heatForecast}{GitHub Repository})
+\section{Usage of Artificial Intelligence}
+Artificial Intelligence, specifically ChatGPT, was employed in various aspects of the project to enhance efficiency and streamline processes.
+
+\begin{itemize}
+\item \textbf{Code Generation:} ChatGPT was utilized to generate lines and blocks of code based on the explicit design choices made regarding data preprocessing, structuring, and the selection of models and networks. This significantly accelerated the initial setup of the data pipeline, enabling the first model to be trained and tested without errors. Additionally, since Jonas, who handled the data preprocessing, was not entirely familiar with the variety of techniques for restructuring data to facilitate efficient machine learning, ChatGPT was instrumental in identifying and implementing the most effective methods.
+
+\item \textbf{Debugging:} When the code crashed or exhibited unexpected behavior, ChatGPT played a crucial role in diagnosing and resolving the issues. This proved particularly helpful in addressing errors that required a deeper understanding of specific tools or libraries.
+
+\item \textbf{Text Refinement:} As non-native English speakers, the team leveraged ChatGPT's capabilities to refine the phrasing of text in the report. This ensured that the final document was clear, professional, and easy to read, enhancing its overall quality and accessibility.
 \end{itemize}
 
 \end{document}
