@@ -1,4 +1,4 @@
-\documentclass[8pt,a4paper]{article}
+\documentclass[conference,9pt]{IEEEtran}
 
 \usepackage[utf8]{inputenc}
 \usepackage{gensymb}
@@ -10,7 +10,7 @@
 \usepackage{setspace}
 \usepackage{enumerate}
 \usepackage{listings}
-\usepackage{geometry}
+%\usepackage{geometry}
 \usepackage{float}
 
 
@@ -34,10 +34,10 @@
     morekeywords={nn, self, super},
 }
 
-\geometry{margin=1in}
+%\geometry{margin=1in}
 
 \title{Global Weather Pattern Prediction for Disaster Preparedness}
-\author{Jonas Thalmeier, Ana Martinez}
+\author{\IEEEauthorblockN{Jonas Thalmeier, Ana Martinez}}
 \date{\today}
 
 \begin{document}
@@ -113,15 +113,12 @@ class HotDayPredictor(nn.Module):
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
-            nn.Sigmoid()
-        )
-    def forward(self, x):
-        return self.fc(x)
+            nn.Sigmoid())
 \end{lstlisting}
 Normalization was applied to the inputs using the global mean and standard deviation calculated from the training set. Despite these steps, the results were disappointing. The training loss decreased, but the validation loss stagnated or increased, indicating significant overfitting. As depicted in Figure \ref{fig:baseline}, the loss for the validation set was much higher than that of the training set.
-\begin{figure}[h]
+\begin{figure}[!t]
     \centering
-    \includegraphics[width=\textwidth]{../training_validation_loss_baseline.png}
+    \includegraphics[width=\columnwidth]{../training_validation_loss_baseline.png}
     \caption{Evolution of training and validation loss}
     \label{fig:baseline}
 \end{figure}
@@ -132,12 +129,11 @@ Dropout layers were introduced to the architecture to mitigate overfitting by pr
 self.fc = nn.Sequential(
     nn.Linear(input_size, 128),
     nn.ReLU(),
-    nn.Dropout(0.3),  # Add dropout with a rate of 30%
+    nn.Dropout(0.3),  # Add dropout of rate 30%
     nn.Linear(128, 64),
     nn.ReLU(),
     nn.Dropout(0.3),  # Add dropout
-    nn.Linear(64, 1)
-)
+    nn.Linear(64, 1))
 \end{lstlisting}
 Additionally, a weighted loss function was implemented to address class imbalance:
 \begin{lstlisting}
@@ -145,42 +141,55 @@ global_pos_weight = (global_total_count - global_positive_count) / global_positi
 loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(global_pos_weight, dtype=torch.float32))
 \end{lstlisting}
 The learning rate was also reduced by a factor of 10 (to 0.0001). Despite these changes, overfitting persisted:
-\begin{itemize}
-    \item Training Loss: 0.311259
-    \item Validation Loss: 20.156125
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c}
+        Training Loss & Validation Loss \\ 
+        \hline 
+        0.311259 & 20.156125 \\
+    \end{tabular}
+\end{center}
 \paragraph{Iteration 2: Adding Geospatial Features}
 Longitude, latitude, and the 95th percentile temperature were added as additional features to each record. While this increased the dimensionality of the data, overfitting remained an issue, with a continued large discrepancy between training and validation loss. Validation loss increased further, indicating no improvement:
-\begin{itemize}
-    \item Training Loss: 0.299057
-    \item Validation Loss: 24.856614
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c}
+        Training Loss & Validation Loss \\ 
+        \hline 
+        0.299057 & 24.856614 \\
+    \end{tabular}
+\end{center}
 \paragraph{Iteration 3: Expanded Dataset and Temporal Filtering}
 An expanded dataset was generated, including additional variables as described in section \ref{sec:DS}. Despite these enhancements, overfitting persisted:
-\begin{itemize}
-    \item Training Loss: 0.282310
-    \item Validation Loss: 22.825080
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c}
+        Training Loss & Validation Loss \\ 
+        \hline 
+        0.282310 & 22.825080 \\
+    \end{tabular}
+\end{center}
 The dataset was limited to land masses using the Land-Sea Mask (lsm) feature included in the dataset. This approach was based on the expectation that weather behavior differs significantly between land and sea, and thus predictions might be easier when focusing exclusively on land areas. However, this restriction significantly reduced the data diversity, leading to an even stronger overfitting effect:
-\begin{itemize}
-    \item Training Loss: 0.161386
-    \item Validation Loss: 31.200668
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c}
+        Training Loss & Validation Loss \\ 
+        \hline 
+        0.1613860 & 31.200668 \\
+    \end{tabular}
+\end{center}
 \paragraph{Evaluation Metrics}
 The following evaluation metrics illustrate the poor generalization of the model:
-\begin{itemize}
-    \item Accuracy: 0.8951
-    \item Precision: 0.1166
-    \item Recall: 0.0436
-    \item F1 Score: 0.0635
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Accuracy & Precision & Recall & F1 Score \\ 
+        \hline 
+        0.8951 & 0.1166 &  0.0436 & 0.0635\\
+    \end{tabular}
+\end{center}
 Despite various attempts to mitigate overfitting, the neural network failed to generalize effectively, necessitating a shift to alternative modeling approaches. As shown in Figure \ref{fig:It3}, the model's performance remains unsatisfactory after all iterations. The training loss continues to decrease steadily, while the validation loss either stagnates or increases, indicating persistent overfitting and the inability of the model to generalize to unseen data.
-\begin{figure}[h]
+\begin{figure*}[!t]
     \centering
-    \includegraphics[width=\textwidth]{../training_validation_loss_Iteration3.png}
+    \includegraphics[width=.75\textwidth]{../training_validation_loss_Iteration3.png}
     \caption{Evolution of training and validation loss after 3rd Iteration of NN model}
     \label{fig:It3}
-\end{figure}
+\end{figure*}
 
 \subsection{Random Forest}
 Random forests were employed due to their robustness and ability to handle high-dimensional data without extensive preprocessing. They also naturally account for feature importance, which can provide insights into the data. For this experiment, the entire training set was used, and hyperparameters such as the number of estimators and maximum tree depth were tuned.
@@ -190,16 +199,16 @@ rf_model = RandomForestClassifier(
 	n_estimators=500,
 	max_depth=20,
 	random_state=42,
-	class_weight="balanced",
-	n_jobs=-1)
+	class_weight="balanced")
 \end{lstlisting}
 Data preprocessing included normalizing the features using the global mean and standard deviation calculated from the training set. The random forest achieved the following results on the test set:
-\begin{itemize}
-\item Accuracy: 0.9185
-\item Precision: 0.2318
-\item Recall: 0.0347
-\item F1 Score: 0.0604
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Accuracy & Precision & Recall & F1 Score \\ 
+        \hline 
+        0.9185 & 0.2318 &  0.0347 & 0.0604\\
+    \end{tabular}
+\end{center}
 While the accuracy was high, the low precision and recall indicated that the model struggled to detect positive samples. The imbalanced dataset likely contributed to these shortcomings, despite applying balanced class weights.
 
 \subsection{eXtreme Gradient Boosting Classifier}
@@ -212,17 +221,16 @@ xgb_model = XGBClassifier(
     max_depth=10,
     learning_rate=0.1,
     scale_pos_weight=scale_pos_weight,
-    random_state=42,
-    n_jobs = -1
-)
+    random_state=42)
 \end{lstlisting}
 The features were normalized in the same way as for the random forest. The XGBoost classifier provided the following evaluation metrics:
-\begin{itemize}
-\item Accuracy: 0.9132
-\item Precision: 0.1987
-\item Recall: 0.0478
-\item F1 Score: 0.0776
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Accuracy & Precision & Recall & F1 Score \\ 
+        \hline 
+        0.9132 & 0.1987 &  0.0478 & 0.0776\\
+    \end{tabular}
+\end{center}
 Compared to the random forest, XGBoost demonstrated slightly improved precision and recall. However, the metrics were still far from acceptable, suggesting the limitations of tree-based models for this specific task.
 
 \subsection{Logistic Regression with PyTorch}
@@ -241,18 +249,23 @@ The loss function was defined as binary cross-entropy with a positive class weig
 criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([61.63], dtype=torch.float32))
 \end{lstlisting}
 Despite applying normalization, weighted loss, and regularization, the logistic regression model still struggled with overfitting, as shown in Figure \ref{fig:logistic_torch}.
-
-\begin{itemize}
-\item Training Loss: 0.2671
-\item Validation Loss: 22.1748
-\item Accuracy: 0.8965
-\item Precision: 0.1223
-\item Recall: 0.0508
-\item F1 Score: 0.0721
-\end{itemize}
-\begin{figure}[h]
+\begin{center}
+    \begin{tabular}{c|c}
+        Training Loss & Validation Loss \\ 
+        \hline 
+        0.2671 & 22.1748 \\
+    \end{tabular}
+\end{center}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Accuracy & Precision & Recall & F1 Score \\ 
+        \hline 
+        0.8965 & 0.1223 &  0.0508 & 0.0721\\
+    \end{tabular}
+\end{center}
+\begin{figure}[!t]
     \centering
-    \includegraphics[width=\textwidth]{../training_validation_loss_Iteration6.png}
+    \includegraphics[width=\columnwidth]{../training_validation_loss_Iteration6.png}
     \caption{Training and validation loss for logistic regression (PyTorch)}
     \label{fig:logistic_torch}
 \end{figure}
@@ -263,20 +276,19 @@ Logistic regression implemented using Scikit-Learn offered a computationally eff
 \begin{lstlisting}
 lr_model = LogisticRegression(
     penalty="l2",  # Regularization
-    C=1.0,         # Regularization strength (1.0 is default)
+    C=1.0,         # Regularization strength
     solver="saga"
-    max_iter=500,  # Increase iterations for convergence
-    random_state=42,
-    n_jobs=-1
-)
+    max_iter=500,
+    random_state=42)
 \end{lstlisting}
 Normalization was performed using the global mean and standard deviation. The Scikit-Learn implementation yielded the following results:
-\begin{itemize}
-\item Accuracy: 0.9023
-\item Precision: 0.1472
-\item Recall: 0.0625
-\item F1 Score: 0.0885
-\end{itemize}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Accuracy & Precision & Recall & F1 Score \\ 
+        \hline 
+        0.9023 & 0.1472 &  0.0625 & 0.0885\\
+    \end{tabular}
+\end{center}
 Although the Scikit-Learn implementation performed better than the PyTorch model in terms of F1 score, both approaches struggled with the highly imbalanced data, reaffirming the challenges of this task.
 
 \section{Exploring Lower Percentiles}
@@ -284,7 +296,7 @@ Given that all previous attempts to achieve satisfactory performance had failed,
 The results of this investigation are summarized in Table \ref{tab:perc} and visualized in Figure \ref{fig:perc}. It is evident that lowering the percentile threshold simplifies the task, resulting in significantly better performance, as measured by the F1 score. Notably, the F1 score decreases sharply as the percentile threshold approaches 0.95. This indicates that predicting events defined by higher percentiles is substantially more challenging.\\
 However, it is important to emphasize that the original objective was to predict heatwaves as defined by the Spanish meteorological service, which corresponds to the 95th percentile. While predictions based on lower percentiles do not directly align with this goal, they can serve as a valuable intermediary step. Models performing well on lower percentiles can inform the selection of suitable architectures, hyperparameter tuning, and data augmentation strategies (e.g., SMOTE). These insights can then be leveraged to optimize models for the more challenging task of predicting heatwaves at the 95th percentile threshold.
 
-\begin{table}[H]
+\begin{table}[!t]
     \centering
     \caption{Model performance metrics for various percentiles.}
     \label{tab:perc}
@@ -302,31 +314,34 @@ However, it is important to emphasize that the original objective was to predict
     \end{tabular}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure*}[!t]
     \centering
-    \includegraphics[width=\textwidth]{./performance_vs_percentile.png}
+    \includegraphics[width=.75\textwidth]{./performance_vs_percentile.png}
     \caption{Model performance across different percentiles.}
     \label{fig:perc}
-\end{figure}
+\end{figure*}
 
 \section{Different Prediction Timeframes}
 To simplify the task for the machine learning model, alternative prediction timeframes were evaluated. Initially, the goal was to predict whether at least 3 of the next 7 days would be "hot." The task was modified to predict whether the next day would be "hot" and then whether at least 2 of the next 3 days would be "hot," using both the 70th and 95th percentiles. \\
 The results, shown in Table \ref{tab:timeframe}, highlight that predicting whether the next day is "hot" is significantly easier than the original task for both percentiles. The performance metrics for this simplified task far exceed those of the initial 7-day prediction. Expanding the timeframe to predict whether at least 2 of the next 3 days will be "hot" proves more challenging. For the 95th percentile, the F1 score indicates poor overall performance, though it remains better than the original 7-day prediction task. For the 70th percentile, performance is still acceptable, clearly outperforming the initial task but falling short of the simpler next-day prediction.
-\begin{table}[H]
+\begin{table}[!t]
     \centering
-    \caption{Performance metrics for different prediction timeframes and percentiles}
+    \caption{Performance metrics for different cases:\\
+    \textbf{Case 1}: Predict 1 heat day in 1 day streak;\\
+    \textbf{Case 2}: Predict 2 heat days in 3 day streak;\\
+    \textbf{Case 3}: Predict 3 heat days in 7 day streak.}
     \label{tab:timeframe}
     \begin{tabular}{|c|c|c|c|c|c|}
         \hline
-        \textbf{Percentile} & \textbf{Task} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+        \textbf{Percentile} & \textbf{Case} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
         \hline
-        70th & 1 heat day in 1 day streak & 0.9469 & 0.9488 & 0.8836 & 0.9151 \\
-        70th & 2 heat days in 3 day streak & 0.8530 & 0.8131 & 0.6807 & 0.7411 \\
-        70th & 3 heat days in 7 day streak & 0.7452 & 0.7531 & 0.5323 & 0.6238 \\
+        70th & 1 & 0.9469 & 0.9488 & 0.8836 & 0.9151 \\
+        70th & 2 & 0.8530 & 0.8131 & 0.6807 & 0.7411 \\
+        70th & 3 & 0.7452 & 0.7531 & 0.5323 & 0.6238 \\
         \hline
-        95th & 1 heat day in 1 day streak & 0.9431 & 0.9317 & 0.3436 & 0.5020 \\
-        95th & 2 heat days in 3 day streak & 0.9346 & 0.6541 & 0.0648 & 0.1179 \\
-        95th & 3 heat days in 7 day streak & 0.9164 & 0.1898 & 0.0076 & 0.0147 \\
+        95th & 1 & 0.9431 & 0.9317 & 0.3436 & 0.5020 \\
+        95th & 2 & 0.9346 & 0.6541 & 0.0648 & 0.1179 \\
+        95th & 3 & 0.9164 & 0.1898 & 0.0076 & 0.0147 \\
         \hline
     \end{tabular}
 \end{table}

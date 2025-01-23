@@ -1,0 +1,96 @@
+lr_model = LogisticRegression(
+    penalty="l2",  # Regularization
+    C=1.0,         # Regularization strength (1.0 is default)
+    # solver="lbfgs", # Solver for large datasets
+    solver="saga",
+    max_iter=500,  # Increase iterations for convergence
+    random_state=42,
+    verbose=1,  # Enable progress output
+    n_jobs=-1
+)
+
+
+
+50th percentile:
+Random Forest Performance:
+Accuracy: 0.7645
+Precision: 0.8075
+Recall: 0.7965
+F1 Score: 0.8020
+
+60th percentile:
+Random Forest Performance:
+Accuracy: 0.7530
+Precision: 0.7804
+Recall: 0.7010
+F1 Score: 0.7386
+
+70th percentile:
+Random Forest Performance:
+Accuracy: 0.7452
+Precision: 0.7531
+Recall: 0.5323
+F1 Score: 0.6238
+
+80th percentile:
+Accuracy: 0.7494
+Precision: 0.6656
+Recall: 0.2781
+F1 Score: 0.3923
+
+90th percentile:
+Accuracy: 0.8302
+Precision: 0.4024
+Recall: 0.0595
+F1 Score: 0.1037
+
+95th percentile:
+Accuracy: 0.9164
+Precision: 0.1898
+Recall: 0.0076
+F1 Score: 0.0147
+
+
+
+----------------------------------
+70th percentile
+
+1 heat day in 1 day streak
+Accuracy: 0.9469
+Precision: 0.9488
+Recall: 0.8836
+F1 Score: 0.9151
+
+2 heat day in 3 day streak
+Accuracy: 0.8530
+Precision: 0.8131
+Recall: 0.6807
+F1 Score: 0.7411
+
+3 heat days in 7 day streak
+Accuracy: 0.7452
+Precision: 0.7531
+Recall: 0.5323
+F1 Score: 0.6238
+
+
+95th percentile
+
+1 heat day in 1 day streak
+Accuracy: 0.9431
+Precision: 0.9317
+Recall: 0.3436
+F1 Score: 0.5020
+
+2 heat day in 3 day streak
+Accuracy: 0.9346
+Precision: 0.6541
+Recall: 0.0648
+F1 Score: 0.1179
+
+
+3 heat days in 7 day streak
+Accuracy: 0.9164
+Precision: 0.1898
+Recall: 0.0076
+F1 Score: 0.0147
