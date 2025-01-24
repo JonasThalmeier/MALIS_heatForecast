@@ -184,12 +184,12 @@ The following evaluation metrics illustrate the poor generalization of the model
     \end{tabular}
 \end{center}
 Despite various attempts to mitigate overfitting, the neural network failed to generalize effectively, necessitating a shift to alternative modeling approaches. As shown in Figure \ref{fig:It3}, the model's performance remains unsatisfactory after all iterations. The training loss continues to decrease steadily, while the validation loss either stagnates or increases, indicating persistent overfitting and the inability of the model to generalize to unseen data.
-\begin{figure*}[!t]
+\begin{figure}[!t]
     \centering
-    \includegraphics[width=.75\textwidth]{../training_validation_loss_Iteration3.png}
+    \includegraphics[width=\columnwidth]{../training_validation_loss_Iteration3.png}
     \caption{Evolution of training and validation loss after 3rd Iteration of NN model}
     \label{fig:It3}
-\end{figure*}
+\end{figure}
 
 \subsection{Random Forest}
 Random forests were employed due to their robustness and ability to handle high-dimensional data without extensive preprocessing. They also naturally account for feature importance, which can provide insights into the data. For this experiment, the entire training set was used, and hyperparameters such as the number of estimators and maximum tree depth were tuned.
@@ -314,12 +314,12 @@ However, it is important to emphasize that the original objective was to predict
     \end{tabular}
 \end{table}
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
     \centering
-    \includegraphics[width=.75\textwidth]{./performance_vs_percentile.png}
+    \includegraphics[width=\columnwidth]{./performance_vs_percentile.png}
     \caption{Model performance across different percentiles.}
     \label{fig:perc}
-\end{figure*}
+\end{figure}
 
 \section{Different Prediction Timeframes}
 To simplify the task for the machine learning model, alternative prediction timeframes were evaluated. Initially, the goal was to predict whether at least 3 of the next 7 days would be "hot." The task was modified to predict whether the next day would be "hot" and then whether at least 2 of the next 3 days would be "hot," using both the 70th and 95th percentiles. \\
