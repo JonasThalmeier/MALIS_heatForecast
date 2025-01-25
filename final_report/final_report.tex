@@ -116,7 +116,7 @@ class HotDayPredictor(nn.Module):
             nn.Sigmoid())
 \end{lstlisting}
 Normalization was applied to the inputs using the global mean and standard deviation calculated from the training set. Despite these steps, the results were disappointing. The training loss decreased, but the validation loss stagnated or increased, indicating significant overfitting. As depicted in Figure \ref{fig:baseline}, the loss for the validation set was much higher than that of the training set.
-\begin{figure}[!t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{../training_validation_loss_baseline.png}
     \caption{Evolution of training and validation loss}
@@ -184,7 +184,7 @@ The following evaluation metrics illustrate the poor generalization of the model
     \end{tabular}
 \end{center}
 Despite various attempts to mitigate overfitting, the neural network failed to generalize effectively, necessitating a shift to alternative modeling approaches. As shown in Figure \ref{fig:It3}, the model's performance remains unsatisfactory after all iterations. The training loss continues to decrease steadily, while the validation loss either stagnates or increases, indicating persistent overfitting and the inability of the model to generalize to unseen data.
-\begin{figure}[!t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{../training_validation_loss_Iteration3.png}
     \caption{Evolution of training and validation loss after 3rd Iteration of NN model}
@@ -263,7 +263,7 @@ Despite applying normalization, weighted loss, and regularization, the logistic 
         0.8965 & 0.1223 &  0.0508 & 0.0721\\
     \end{tabular}
 \end{center}
-\begin{figure}[!t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{../training_validation_loss_Iteration6.png}
     \caption{Training and validation loss for logistic regression (PyTorch)}
@@ -291,12 +291,65 @@ Normalization was performed using the global mean and standard deviation. The Sc
 \end{center}
 Although the Scikit-Learn implementation performed better than the PyTorch model in terms of F1 score, both approaches struggled with the highly imbalanced data, reaffirming the challenges of this task.
 
+\section{Anomaly Filtering}
+To address the challenges posed by the imbalanced dataset, anomaly detection and filtering were employed as part of the preprocessing pipeline. The goal was to improve the training process by removing anomalous data points and ensuring that the supervised models were trained on cleaner data, making easy to detect hot days later, as anomalous samples.
+
+Anomalies were detected across the entire dataset using the Isolation Forest algorithm. This unsupervised model isolates observations that deviate significantly from the majority by constructing random isolation trees. A contamination rate of 0.01 was used, flagging approximately 1\% of the dataset as anomalies. After anomaly detection, the dataset was split into two subsets:
+\begin{itemize}
+    \item The \textbf{filtered training set}, which included only the normal data points and was used for training the models.
+    \item The \textbf{evaluation dataset}, which contained the entire dataset (normal and anomalous data) to test the models in a real-world scenario.
+\end{itemize}
+
+Both Logistic Regression and Random Forest classifiers were trained on the filtered dataset. The training data was normalized using the global mean and standard deviation, and class weights were set to "balanced" to address the inherent class imbalance.
+
+The models were evaluated on the entire dataset, including both normal and anomalous samples. Table~\ref{tab:performance_filtered} summarizes the results.
+
+\begin{table}[h!]
+\centering
+\caption{Performance Metrics after Anomaly Filtering}
+\label{tab:performance_filtered}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\ \midrule
+Random Forest & 0.9471 & 0.9274 & 0.0735 & 0.1362 \\
+Logistic Regression & 0.9432 & 0.5012 & 0.0106 & 0.0208 \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Despite the anomaly filtering step, the severe class imbalance in the dataset continued to limit the models' performance. While both models achieved high accuracy, this was primarily due to the dominance of the majority class (non-heatwave events). Both precision and recall were constrained, particularly for Logistic Regression. The Random Forest model performed slightly better, leveraging its ensemble structure to identify some minority-class samples. However, the low recall for both models underscores the difficulty of detecting rare heatwave events.
+
+\section{Model Performance After Applying SMOTE}
+To address the severe class imbalance observed in the dataset, Synthetic Minority Oversampling Technique (SMOTE) was applied to the filtered training data. SMOTE generates synthetic samples for the minority class by interpolating between existing samples, creating a more balanced dataset for training. This approach aimed to improve the models' ability to detect heatwave events by increasing recall and achieving a better balance between precision and recall.
+
+
+\begin{table}[h]
+\centering
+\caption{Performance Metrics After Applying SMOTE}
+\label{tab:performance_smote}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\ \midrule
+Random Forest & 0.8019 & 0.2089 & 0.8932 & 0.3386 \\ 
+Logistic Regression & 0.7449 & 0.1586 & 0.8116 & 0.2653 \\ 
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Both models demonstrated a substantial improvement in recall after applying SMOTE. For Random Forest, recall increased from 0.0735 to 0.8932, while Logistic Regression saw a similar boost from 0.0106 to 0.8116. This indicates that SMOTE enabled the models to identify a far greater proportion of actual heatwave events, significantly addressing the major limitation of the previous approach. The F1 score also improved for both models, these improvements reflect a better balance between precision and recall. Even though precision decreased due to the increased number of false positives introduced by oversampling, showing that the models became less conservative in predicting positive samples. Accuracy also decreased slightly. However, in the context of imbalanced datasets, accuracy is less relevant as it is dominated by the majority class and does not fully reflect the ability of the models to detect the minority class.
+
+These results highlight the effectiveness of SMOTE in improving recall and achieving a more balanced model performance for heatwave prediction. While the models are now less conservative in predicting the minority class, the significant improvement in recall makes them more suitable for scenarios where identifying positive samples is critical.
+
+
 \section{Exploring Lower Percentiles}
 Given that all previous attempts to achieve satisfactory performance had failed, the next step was to investigate whether altering the problem definition could yield better results. Specifically, the effect of lowering the percentile threshold used to define "hot" days, as outlined in Section \ref{heatDef}, was examined. For this purpose, the logistic regression model with the "saga" solver, which had previously demonstrated relatively good results, was utilized. Percentile thresholds of 0.5, 0.6, 0.7, 0.8, 0.9, and 0.95 were tested.\\
 The results of this investigation are summarized in Table \ref{tab:perc} and visualized in Figure \ref{fig:perc}. It is evident that lowering the percentile threshold simplifies the task, resulting in significantly better performance, as measured by the F1 score. Notably, the F1 score decreases sharply as the percentile threshold approaches 0.95. This indicates that predicting events defined by higher percentiles is substantially more challenging.\\
 However, it is important to emphasize that the original objective was to predict heatwaves as defined by the Spanish meteorological service, which corresponds to the 95th percentile. While predictions based on lower percentiles do not directly align with this goal, they can serve as a valuable intermediary step. Models performing well on lower percentiles can inform the selection of suitable architectures, hyperparameter tuning, and data augmentation strategies (e.g., SMOTE). These insights can then be leveraged to optimize models for the more challenging task of predicting heatwaves at the 95th percentile threshold.
 
-\begin{table}[!t]
+\begin{table}[h]
     \centering
     \caption{Model performance metrics for various percentiles.}
     \label{tab:perc}
@@ -314,7 +367,7 @@ However, it is important to emphasize that the original objective was to predict
     \end{tabular}
 \end{table}
 
-\begin{figure}[!t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{./performance_vs_percentile.png}
     \caption{Model performance across different percentiles.}
@@ -324,7 +377,7 @@ However, it is important to emphasize that the original objective was to predict
 \section{Different Prediction Timeframes}
 To simplify the task for the machine learning model, alternative prediction timeframes were evaluated. Initially, the goal was to predict whether at least 3 of the next 7 days would be "hot." The task was modified to predict whether the next day would be "hot" and then whether at least 2 of the next 3 days would be "hot," using both the 70th and 95th percentiles. \\
 The results, shown in Table \ref{tab:timeframe}, highlight that predicting whether the next day is "hot" is significantly easier than the original task for both percentiles. The performance metrics for this simplified task far exceed those of the initial 7-day prediction. Expanding the timeframe to predict whether at least 2 of the next 3 days will be "hot" proves more challenging. For the 95th percentile, the F1 score indicates poor overall performance, though it remains better than the original 7-day prediction task. For the 70th percentile, performance is still acceptable, clearly outperforming the initial task but falling short of the simpler next-day prediction.
-\begin{table}[!t]
+\begin{table}[h]
     \centering
     \caption{Performance metrics for different cases:\\
     \textbf{Case 1}: Predict 1 heat day in 1 day streak;\\
