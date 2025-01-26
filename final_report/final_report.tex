@@ -25,8 +25,8 @@
     commentstyle=\color{gray},
     stringstyle=\color{red},
     showstringspaces=false,
-    numbers=left,
-    numberstyle=\tiny\color{gray},
+    %numbers=left,
+    %numberstyle=\tiny\color{gray},
     frame=single,
     breaklines=true,
     tabsize=4,
@@ -36,15 +36,17 @@
 
 %\geometry{margin=1in}
 
-\title{Global Weather Pattern Prediction for Disaster Preparedness}
+\title{Predicting Heatwaves in Spain: A Machine Learning Approach}
 \author{\IEEEauthorblockN{Jonas Thalmeier, Ana Martinez}}
 \date{\today}
 
 \begin{document}
 
 \maketitle
-
-
+\begin{center}
+GitHub Repository: \href{https://github.com/JonasThalmeier/MALIS_heatForecast}{https://github.com/JonasThalmeier/MALIS\_heatForecast}\\
+The main code is called \texttt{WeatherForecast.ipynb}
+\end{center}
 \section{Introduction}
 Effective identification and prediction of heatwaves are critical for public health, agriculture, and energy management. To accomplish this, a dataset containing atmospheric measurements was downloaded from the Copernicus Climate Data Store (CDS)\footnote{\url{https://cds.climate.copernicus.eu/}}. The dataset in use is ERA5, which provides hourly atmospheric reanalysis data with a high temporal and spatial resolution. As part of this project, steps were taken to extract spatially and temporally restricted subsets of ERA5 data and to apply percentile-based definitions of heatwaves.
 
@@ -391,8 +393,9 @@ By addressing these considerations, the project could be significantly improved,
 \item Anomaly detection: Ana
 \item Investigating effect of using different percentile: Jonas
 \item Writing Report: Both
+\item Video: Jonas
 \end{itemize}
-For more information the commit history can be consulted (\href{https://github.com/JonasThalmeier/MALIS_heatForecast}{GitHub Repository})
+For more information the commit history can be consulted.
 \section{Usage of Artificial Intelligence}
 Artificial Intelligence, specifically ChatGPT, played a key role in making our project more efficient and streamlined. We used it to generate code snippets based on our design choices for data preprocessing, structuring, and model selection. This helped us quickly set up the data pipeline and get the first model up and running without errors. Since Jonas, who was in charge of data preprocessing, wasn’t fully familiar with all the techniques for restructuring data for machine learning, ChatGPT was a huge help in identifying and implementing the best methods. It also came to the rescue when the code crashed or behaved unexpectedly, helping us debug issues, especially those requiring a deeper understanding of specific tools or libraries. As non-native English speakers, we also relied on ChatGPT to polish the phrasing in our report, making sure it was clear, professional, and easy to read. This really improved the overall quality and accessibility of our final document
 \end{document}
